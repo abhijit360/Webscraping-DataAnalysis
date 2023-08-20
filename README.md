@@ -10,6 +10,7 @@ Progress report (completed):
 - convert to excel using pandas
 
 Goals:
+- Test if code is reusable on different years and competitions
 - visualise the track events using Matplotlib and seaborn. (make a good visual data. A nice interactive dashboard would be sick!)
 
 
