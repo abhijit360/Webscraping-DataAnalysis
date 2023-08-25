@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from DataQueue import DataQueue
 import re, csv, pandas
-html_doc = "./Webpage.html"
+html_doc = "./webpages/webpage2.html"
 
 print("Command: Obtaining Data")
 
@@ -64,7 +64,7 @@ with open(html_doc, 'r', encoding="utf-8") as html:
     athlete_data = DataQueue() # queue to keep track of data
     soup = BeautifulSoup(html,'html.parser')
     
-    competition_name ="15th IAAF World Championships, Beijing, CHN"
+    competition_name ="14th IAAF World Championships, Moskva, RUS "
 
     for event_id in event_ids:
         event_tag = soup.find('td', {"class": 'event', "id" : event_id})
