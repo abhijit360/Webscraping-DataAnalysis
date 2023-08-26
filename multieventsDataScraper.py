@@ -37,7 +37,7 @@ def formatData(data):
         writer.writerow(data)
 
 
-def obtainAllAvailableData(row,event_name,event_id,event_date,event_wind,competition_name, round, heat):
+def obtainAllAvailableData(row,event_name,event_id,event_date,competition_name):
     number = row.find('td').text # finds the first instance of <td> which always contains the number
     athlete_name = row.find("a",class_='mobile').text
     if '\xa0' in athlete_name:
@@ -48,25 +48,20 @@ def obtainAllAvailableData(row,event_name,event_id,event_date,event_wind,competi
     drug_ban = row.find('td', class_="drugban").text
     nationality , DOB , athlete_time = row.find_all('td', class_="rc")[0].text , row.find_all('td', class_="rc")[1].text, row.find_all('td', class_="rc")[2].text.strip()
     
-    # date = row.find('td', class_='desktop rc').text
-    # record_title , record_value = row.find_all('a', attrs={"name": "Personal best progression"})[0].text , row.find_all('a', attrs={"name": "Personal best progression"})[1].text
-    # record_data = row.find_all('a', attrs={"name": "Personal best progression"})
+    try:
+        personal_best_progressions = row.find_all("a",{"name\\":"Personal best progression"})
+        personal_best_1 = None
+        personal_best_2 = None
+        if personal_best_progressions is not None and len(personal_best_progressions) > 1:
+            personal_best_1 = personal_best_progressions[0].text
+            personal_best_2 = personal_best_progressions[1].text
+        else:
+            personal_best_2 = row.find("a", {"name\\":"Seasonal best progression"}).text
+    except Exception as e:
+        print("exception", e)
     
-    record_data = []
-    for child in row.children:
-        data = child.find('a', attrs={"name\\": "Personal best progression"})
-        if data:
-            record_data.append(data.text)
-    qualification_element = row.select("td:nth-last-child(2)")
-    qualification = qualification_element[0].text if qualification_element else None
-
-    td_elements = row.find_all("td", {"align":"right"})
-  
-    # Apply .select() on each <td> element to get the last child
-    additional_record_information = row.find_all("td",  {"align":"right"})[3].text
-
-    reaction_time = row.select("td:last-child")[0].text.strip()
-
+    NR_data = row.find_all("td", {"align": "right"})[3].text
+    other_ranking = row.select("td:last-child")[0].text
     gender = "Men" if event_id.split(".")[0] == "1" else "Women"
 
     data = {
@@ -75,18 +70,16 @@ def obtainAllAvailableData(row,event_name,event_id,event_date,event_wind,competi
         "event_name": event_name,
         "event_date": event_date,
         "event_wind": event_wind,
-        "Round": round,
-        "Heat": heat,
         "No." : number,
         "Athlete Name" : athlete_name,
         "Country" : nationality,
         "DOB": DOB, #date of birth
-        "Drugban": drug_ban,
+        "drugban": drug_ban,
         "Time": athlete_time,
-        "PB/SB" : record_data,
-        "Qualification": qualification.upper(),
-        "NR": additional_record_information,
-        "Reaction Time": reaction_time
+        "Personal_best_1" : personal_best_1,
+        "Personal_best_2" : personal_best_2,
+        "NR": NR_data,
+        "other_ranking": other_ranking
     }
 
     return data
@@ -105,7 +98,7 @@ only concerned with: 100m, 100m hurdles, 110m hurdles, 200m, 400m, 400m hurdles
 print("Command: Obtaining Data")
 with open(html_doc, 'r', encoding="utf-8") as html:
     event_data = {}
-    event_ids = ["1.40.","1.50.","1.70.","1.270.","1.300.",'2.40.','2.50.','2.70.','2.260.','2.300.'] #"1.50.","1.70.","1.270.","1.300.",'2.40.','2.50.','2.70.','2.260.','2.300.'
+    event_ids = ["1.500.", "2.500.", "1.550."] #"1.500.", "2.500.", "1.550."
     athlete_data = DataQueue() # queue to keep track of data
     soup = BeautifulSoup(html,'html.parser')
     
@@ -123,9 +116,7 @@ with open(html_doc, 'r', encoding="utf-8") as html:
         # athlete_data.enqueue()
         # print("DATA SET ---->", {"event_date":event_date, "event_wind": event_wind, "event_name": event_name})
         row = event_tag.parent.find_next_sibling('tr') # gives the next <tr> sibling 
-        
-        ROUND = "Finals" 
-        HEAT = "Finals"  
+         
         # initial default values. These values are changed accordingly
 
         while True:
@@ -184,7 +175,7 @@ with open(html_doc, 'r', encoding="utf-8") as html:
                 # athlete_data.enqueue(event_round_date)
                 # row = row.find_next_sibling('tr')
             else:
-                athlete_data.enqueue(obtainAllAvailableData(row, event_date=event_date, event_id=event_id,event_name=event_name, event_wind=event_wind, competition_name=competition_name, round=ROUND,heat=HEAT))
+                athlete_data.enqueue(obtainAllAvailableData(row, event_date=event_date, event_id=event_id,event_name=event_name, competition_name=competition_name))
                 # posibility that the event_wind will override the heat_wind
 
                 # if row.find_next_sibling('tr').find("td", {"colspan":7}):
@@ -194,32 +185,30 @@ with open(html_doc, 'r', encoding="utf-8") as html:
     
 
     print("Command: Formatting to CSV")
-    headers = [ "Competition" ,
+    headers = [ "Competition",
         "gender",
         "event_name",
         "event_date",
         "event_wind",
-        "Round",
-        "Heat",
-        "No." ,
-        "Athlete Name",
+        "No.",
+        "Athlete Name", 
         "Country",
-        "DOB", 
-        "Drugban",
+        "DOB",
+        "drugban",
         "Time",
-        "PB/SB",
-        "Qualification",
+        "Personal_best_1",
+        "Personal_best_2",
         "NR",
-        "Reaction Time"]
+        "other_ranking"]
     
     has_header = False
     try:
-        with open('./data/TrackDATA.csv', "r") as file:
+        with open('./data/MultiEventsDATA.csv', "r") as file:
             has_header = csv.Sniffer().has_header(file.read(100))
     except: 
         print("facing an error with file!")
 
-    with open('./data/TrackDATA.csv', "a", newline="", encoding='utf-8') as file:
+    with open('./data/MultiEventsDATA.csv', "a", newline="", encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=headers)
         if not has_header:
             writer.writeheader()
@@ -230,7 +219,7 @@ with open(html_doc, 'r', encoding="utf-8") as html:
     print("Command: Done")
     print("command: cleaning Data")
 
-    dataFrame = pandas.read_csv("./data/TrackDATA.csv")
-    dataFrame.to_excel("./data/TrackData.xlsx")
+    dataFrame = pandas.read_csv("./data/MultiEventsDATA.csv")
+    dataFrame.to_excel("./data/MultiEventsDATA.xlsx")
     
     

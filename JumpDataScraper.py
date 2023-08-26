@@ -11,9 +11,10 @@ def obtainAllAvailableData(athlete_row, athlete_data_row, event_date, event_id,e
     drug_ban = athlete_row.find("td", class_="drugban").text
 
     class_rc_tds = athlete_row.find_all("td", class_="rc")
-    nationality, DOB, furthest_throw = class_rc_tds[0].text, class_rc_tds[1].text, class_rc_tds[2].text.strip()
+    nationality, DOB, furthest_jump = class_rc_tds[0].text, class_rc_tds[1].text, class_rc_tds[2].text.strip()
 
-    AR_data = athlete_row.find_all("td", {"align":"right"})[3].text
+    decimal_data = athlete_row.find_all("td", {"align":"right"})[2].text
+    NR_data =  athlete_row.find_all("td", {"align":"right"})[3].text
 
     try:
         personal_best_progressions = athlete_row.find_all("a",{"name\\":"Personal best progression"})
@@ -30,12 +31,14 @@ def obtainAllAvailableData(athlete_row, athlete_data_row, event_date, event_id,e
 
     qualification = athlete_row.select("td:nth-last-child(2)")[0].text.upper()
     Misc_data = row.select("td:nth-last-child(1)")[0].text
- 
-    if furthest_throw != "DNS":
-        all_throw_data = athlete_data_row.find("td", {"colspan": "7"}).text
+    
+   
+    if furthest_jump != "DNS" and furthest_jump !="NM":
+        all_jump_data = athlete_data_row.find("td", {"colspan": "7"}).text
     else:
-        all_throw_data ="DNS"
-
+        all_jump_data ="DNS"
+   
+     
     gender = "Men" if event_id.split(".")[0] == "1" else "Women"
 
     return {
@@ -48,9 +51,10 @@ def obtainAllAvailableData(athlete_row, athlete_data_row, event_date, event_id,e
         "drug ban": drug_ban,
         "nationality": nationality,
         "DOB": DOB,
-        "furthest_throw": furthest_throw,
-        "all_throws": all_throw_data,
-        "AR_data": AR_data,
+        "furthest_jump": furthest_jump,
+        "decimal_data": decimal_data,
+        "NR_data" : NR_data,
+        "all_jumps": all_jump_data,
         "Personal_best_progression": personal_best_1,
         "Seaonal_best_progression": personal_best_2,
         "qualification": qualification,
@@ -60,7 +64,7 @@ def obtainAllAvailableData(athlete_row, athlete_data_row, event_date, event_id,e
 
 with open(html_doc, 'r', encoding="utf-8") as html:
     event_data = {}
-    event_ids = ["1.350.", "1.360." , "1.380." , "1.390." , "2.350." , "2.360." ,"2.380.", "2.390."] #"1.350.", "1.360." , "1.380." , "1.390." , "2.350." , "2.360." ,"2.380.", "2.390."
+    event_ids = ["1.330.","2.330.", "1.340.", "2.340.", "1.310.", "2.310."] #"1.330.", "2.330.", "1.340.", "2.340.", "1.310.", "2.310."
     athlete_data = DataQueue() # queue to keep track of data
     soup = BeautifulSoup(html,'html.parser')
     
@@ -112,19 +116,19 @@ with open(html_doc, 'r', encoding="utf-8") as html:
     
 
     print("Command: Formatting to CSV")
-    headers = [ "competition",
+    headers = ["competition",
         "event",
         "date",
         "round",
-        "heat",
         "number",
         "name",
         "drug ban",
         "nationality",
         "DOB",
-        "furthest_throw",
-        "all_throws",
-        "AR_data",
+        "furthest_jump",
+        "decimal_data",
+        "NR_data",
+        "all_jumps",
         "Personal_best_progression",
         "Seaonal_best_progression",
         "qualification",
@@ -133,12 +137,12 @@ with open(html_doc, 'r', encoding="utf-8") as html:
     
     has_header = False
     try:
-        with open('./data/ThrowsDATA.csv', "r+") as file:
+        with open('./data/JumpDATA.csv', "r+") as file:
             has_header = csv.Sniffer().has_header(file.read(100))
     except Exception as e: 
         print("facing an error with file!", e)
 
-    with open('./data/ThrowsDATA.csv', "a", newline="", encoding='utf-8') as file:
+    with open('./data/JumpDATA.csv', "a", newline="", encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=headers)
         if not has_header:
             writer.writeheader()
@@ -149,5 +153,5 @@ with open(html_doc, 'r', encoding="utf-8") as html:
     print("Command: Done")
     print("command: cleaning Data")
 
-    dataFrame = pandas.read_csv("./data/ThrowsDATA.csv")
-    dataFrame.to_excel("./data/ThrowsData.xlsx")
+    dataFrame = pandas.read_csv("./data/JumpDATA.csv")
+    dataFrame.to_excel("./data/JumpData.xlsx")
