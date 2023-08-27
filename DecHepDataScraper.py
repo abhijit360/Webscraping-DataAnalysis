@@ -60,96 +60,112 @@ def obtainAllAvailableData(athlete_row, athlete_data_row, event_date, event_id,e
         "misc_data":Misc_data,
         "Gender": gender,
     }
+competitions = ["2010 Commonwealth games Delhi",
+"2012 London olympics",
+"2013 Asian championship",
+"2014 Asian games",
+"2014 Commonwealth games Glasgow",
+"2015 Asian championship",
+"2016 Rio Olympics",
+"2017 Asian championship",
+"2018 Asian games",
+"2018 Commonwealth games",
+"2019 Asian championships",
+"2021 Tokyo Olympics",
+"2022 commonwealth games"]
 
-with open(html_doc, 'r', encoding="utf-8") as html:
-    event_data = {}
-    event_ids = ["1.410.","2.400."] # 1.410., 2.400.
-    athlete_data = DataQueue() # queue to keep track of data
-    soup = BeautifulSoup(html,'html.parser')
-    
-    competition_name ="14th IAAF World Championships, Moskva, RUS "
+for comp in competitions:
+    html_doc = "./webpages/" + f"{comp}.html" 
 
-    for event_id in event_ids:
-        event_tag = soup.find('td', {"class": 'event', "id" : event_id})
-    
-        event_name = event_tag.b.text
-        event_date = event_tag.parent.find("td", class_="date").text
-
-        print(f"event_name: {event_name}, event_date: {event_date}")
-       
-      
-        row = event_tag.parent.find_next_sibling('tr') # gives the next <tr> sibling 
+    print(f"Command: Obtaining Data for {comp}")
+    with open(html_doc, 'r', encoding="utf-8") as html:
+        event_data = {}
+        event_ids = ["1.410.","2.400."] # 1.410., 2.400.
+        athlete_data = DataQueue() # queue to keep track of data
+        soup = BeautifulSoup(html,'html.parser')
         
-        ROUND = "Finals"  
+        competition_name ="14th IAAF World Championships, Moskva, RUS "
+
+        for event_id in event_ids:
+            event_tag = soup.find('td', {"class": 'event', "id" : event_id})
         
-        while True:
-            if row.find("td", {"class": 'event', "id" : re.compile(r"\d\.\d\d?\d\.")}):
-                # print("next event")
-                break
-            elif row.find('td', class_="round"):
-                # event_round refers to finals, semifinals, heat
-                data_found = row.find_all('td')
-                event_round = data_found[1].b.text
-                event_round_date = data_found[2].text
-                # if "\xa0" in event_round_date:
-                #     event_round_date = " ".join(event_round_date.split("\xa0"))
-                # event_round_data = {"round":event_round,"round_date": event_round_date}
+            event_name = event_tag.b.text
+            event_date = event_tag.parent.find("td", class_="date").text
+
+            print(f"event_name: {event_name}, event_date: {event_date}")
+        
+        
+            row = event_tag.parent.find_next_sibling('tr') # gives the next <tr> sibling 
+            
+            ROUND = "Finals"  
+            
+            while True:
+                if row.find("td", {"class": 'event', "id" : re.compile(r"\d\.\d\d?\d\.")}):
+                    # print("next event")
+                    break
+                elif row.find('td', class_="round"):
+                    # event_round refers to finals, semifinals, heat
+                    data_found = row.find_all('td')
+                    event_round = data_found[1].b.text
+                    event_round_date = data_found[2].text
+                    # if "\xa0" in event_round_date:
+                    #     event_round_date = " ".join(event_round_date.split("\xa0"))
+                    # event_round_data = {"round":event_round,"round_date": event_round_date}
+                    
+                    ROUND = event_round
+                    event_date = event_round_date
+                    print(f"round: {ROUND}, event_date:{event_round_date}")
+                    # print(f"event_round: {event_round}, event_round_date: {event_round_date}")
+
+
+                    row = row.find_next_sibling('tr')
+                    #pass
+                else:
+                    data = obtainAllAvailableData(athlete_row=row, athlete_data_row= row.find_next_sibling('tr'), event_date=event_date, event_id=event_id,event_name=event_name, competition_name=competition_name, round=ROUND)
+
+                    athlete_data.enqueue(data)
+
                 
-                ROUND = event_round
-                event_date = event_round_date
-                print(f"round: {ROUND}, event_date:{event_round_date}")
-                # print(f"event_round: {event_round}, event_round_date: {event_round_date}")
+                    row = row.find_next_sibling('tr') # skips the athlete_data_row
+                    row = row.find_next_sibling('tr') # next athlete row
+        
+        
 
+        print("Command: Formatting to CSV")
+        headers = ["competition",
+            "event",
+            "date",
+            "round",
+            "number",
+            "name",
+            "drug ban",
+            "nationality",
+            "DOB",
+            "final_points",
+            "NR_data",
+            "all_points",
+            "Personal_best_progression",
+            "Seaonal_best_progression",
+            "qualification",
+            "misc_data",
+            "Gender"]
+        
+        has_header = False
+        try:
+            with open('./data/DecHep.csv', "r+") as file:
+                has_header = csv.Sniffer().has_header(file.read(100))
+        except Exception as e: 
+            print("facing an error with file!", e)
 
-                row = row.find_next_sibling('tr')
-                #pass
-            else:
-                data = obtainAllAvailableData(athlete_row=row, athlete_data_row= row.find_next_sibling('tr'), event_date=event_date, event_id=event_id,event_name=event_name, competition_name=competition_name, round=ROUND)
+        with open('./data/DecHep.csv', "a", newline="", encoding='utf-8') as file:
+            writer = csv.DictWriter(file, fieldnames=headers)
+            if not has_header:
+                writer.writeheader()
+            while athlete_data.is_empty() != True:
+                data = athlete_data.dequeue()
+                writer.writerow(data)
+        
+        print("Command: Done")
+        print("command: cleaning Data")
 
-                athlete_data.enqueue(data)
-
-              
-                row = row.find_next_sibling('tr') # skips the athlete_data_row
-                row = row.find_next_sibling('tr') # next athlete row
-    
-    
-
-    print("Command: Formatting to CSV")
-    headers = ["competition",
-        "event",
-        "date",
-        "round",
-        "number",
-        "name",
-        "drug ban",
-        "nationality",
-        "DOB",
-        "final_points",
-        "NR_data",
-        "all_points",
-        "Personal_best_progression",
-        "Seaonal_best_progression",
-        "qualification",
-        "misc_data",
-        "Gender"]
-    
-    has_header = False
-    try:
-        with open('./data/DecHep.csv', "r+") as file:
-            has_header = csv.Sniffer().has_header(file.read(100))
-    except Exception as e: 
-        print("facing an error with file!", e)
-
-    with open('./data/DecHep.csv', "a", newline="", encoding='utf-8') as file:
-        writer = csv.DictWriter(file, fieldnames=headers)
-        if not has_header:
-            writer.writeheader()
-        while athlete_data.is_empty() != True:
-            data = athlete_data.dequeue()
-            writer.writerow(data)
-       
-    print("Command: Done")
-    print("command: cleaning Data")
-
-    dataFrame = pandas.read_csv("./data/DecHep.csv")
-    dataFrame.to_excel("./data/DecHep.xlsx")
+        
