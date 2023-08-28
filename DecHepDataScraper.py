@@ -60,7 +60,8 @@ def obtainAllAvailableData(athlete_row, athlete_data_row, event_date, event_id,e
         "misc_data":Misc_data,
         "Gender": gender,
     }
-competitions = ["2010 Commonwealth games Delhi",
+competitions = [
+"2010 Commonwealth games Delhi",
 "2012 London olympics",
 "2013 Asian championship",
 "2014 Asian games",
@@ -72,7 +73,9 @@ competitions = ["2010 Commonwealth games Delhi",
 "2018 Commonwealth games",
 "2019 Asian championships",
 "2021 Tokyo Olympics",
-"2022 commonwealth games"]
+"2022 commonwealth games",
+"2023 World Athletics Championships Budapest"
+]
 
 for comp in competitions:
     html_doc = "./webpages/" + f"{comp}.html" 
@@ -80,15 +83,15 @@ for comp in competitions:
     print(f"Command: Obtaining Data for {comp}")
     with open(html_doc, 'r', encoding="utf-8") as html:
         event_data = {}
-        event_ids = ["1.410.","2.400."] # 1.410., 2.400.
+        event_ids = ["1.410.","2.400.","1.410.15","1.410.000000.", "2.400.000000."] # "1.410.", "2.400.", "1.410.15", "1.410.000000.", "2.400..000000."
         athlete_data = DataQueue() # queue to keep track of data
         soup = BeautifulSoup(html,'html.parser')
-        
-        competition_name ="14th IAAF World Championships, Moskva, RUS "
-
+    
         for event_id in event_ids:
             event_tag = soup.find('td', {"class": 'event', "id" : event_id})
-        
+            if not event_tag:
+                print(f"event_tag for {event_id} not found")
+                continue
             event_name = event_tag.b.text
             event_date = event_tag.parent.find("td", class_="date").text
 
@@ -102,6 +105,8 @@ for comp in competitions:
             while True:
                 if row.find("td", {"class": 'event', "id" : re.compile(r"\d\.\d\d?\d\.")}):
                     # print("next event")
+                    break
+                elif row.find('td', class_="sex"):
                     break
                 elif row.find('td', class_="round"):
                     # event_round refers to finals, semifinals, heat
@@ -121,14 +126,14 @@ for comp in competitions:
                     row = row.find_next_sibling('tr')
                     #pass
                 else:
-                    data = obtainAllAvailableData(athlete_row=row, athlete_data_row= row.find_next_sibling('tr'), event_date=event_date, event_id=event_id,event_name=event_name, competition_name=competition_name, round=ROUND)
+                    data = obtainAllAvailableData(athlete_row=row, athlete_data_row= row.find_next_sibling('tr'), event_date=event_date, event_id=event_id,event_name=event_name, competition_name=comp, round=ROUND)
 
                     athlete_data.enqueue(data)
 
                 
                     row = row.find_next_sibling('tr') # skips the athlete_data_row
                     row = row.find_next_sibling('tr') # next athlete row
-        
+                
         
 
         print("Command: Formatting to CSV")
@@ -152,12 +157,12 @@ for comp in competitions:
         
         has_header = False
         try:
-            with open('./data/DecHep.csv', "r+") as file:
+            with open('./data/DecHepDATA.csv', "r+") as file:
                 has_header = csv.Sniffer().has_header(file.read(100))
         except Exception as e: 
             print("facing an error with file!", e)
 
-        with open('./data/DecHep.csv', "a", newline="", encoding='utf-8') as file:
+        with open('./data/DecHepDATA.csv', "a", newline="", encoding='utf-8') as file:
             writer = csv.DictWriter(file, fieldnames=headers)
             if not has_header:
                 writer.writeheader()
@@ -166,6 +171,6 @@ for comp in competitions:
                 writer.writerow(data)
         
         print("Command: Done")
-        print("command: cleaning Data")
+
 
         

@@ -106,20 +106,26 @@ competitions = ["2010 Commonwealth games Delhi",
 "2018 Commonwealth games",
 "2019 Asian championships",
 "2021 Tokyo Olympics",
-"2022 commonwealth games"]
+"2022 commonwealth games",
+"2023 World Athletics Championships Budapest"
+]
 
 for comp in competitions:
     html_doc = "./webpages/" + f"{comp}.html" 
     print(f"Command: Obtaining Data for {comp}")
     with open(html_doc, 'r', encoding="utf-8") as html:
         event_data = {}
-        event_ids = ["1.500.", "2.500.", "1.550."] #"1.500.", "2.500.", "1.550."
+        event_ids = ["1.500.", "2.500.", "1.550.","1.500.000000.", "2.500.000000.", "1.550.000000."] #"1.500.", "2.500.", "1.550.", "1.500.000000.", "2.500.000000.", "1.550.000000." 000000.
         athlete_data = DataQueue() # queue to keep track of data
         soup = BeautifulSoup(html,'html.parser')
         
 
         for event_id in event_ids:
             event_tag = soup.find('td', {"class": 'event', "id" : event_id})
+            if not event_tag:
+                print(f"event_tag for {event_id} not found")
+                continue
+
             event_date = event_tag.parent.find_all('td', class_="date")[0].text
         
         
@@ -230,6 +236,6 @@ for comp in competitions:
                 writer.writerow(data)
         
         print("Command: Done")
-        print("command: cleaning Data")
+        
 
         

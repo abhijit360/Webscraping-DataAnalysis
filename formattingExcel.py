@@ -1,8 +1,10 @@
 #Each excel tab will have a different event
 import pandas
-csv_files = ["TrackData", "ThrowsData"]
+csv_files = ["TrackDATA", "ThrowsDATA","JumpDATA","DecHepDATA", "MultiEventsData"]
 for csv_file in csv_files:
+    print(f"Working with {csv_file}")
     data_frame = pandas.read_csv("./data/"+f"{csv_file}.csv")
+
     if "event_name" in data_frame.columns:
         event_names = data_frame["event_name"].unique()
         with pandas.ExcelWriter("./data/"+ f"{csv_file}.xlsx") as writer:

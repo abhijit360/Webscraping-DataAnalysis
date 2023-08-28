@@ -13,11 +13,17 @@ Progress report (completed):
 - Scrape: Men's and Women's Jump events (long jump, triple jump, High jump)
 - Scrape Decathalon and Hepthalon, 20km race walk and 50km racewalk
 - Formatted data in excel.
-
-Goals:
 - scrape 1500m, 5k, 10k, 3000m steeplechase for men and women under track data.
-- work with world youth champs, world junior champs, world university games, olympics youth, asian youth games, asian youth champions
+- Fix all the data scrapers to work with all webpages:
+    - DecHepDataScraper.py (done)
+    - JumpDataScraper.py (done)
+    - MultieventsDataScraper.py (done)
+- Include the new world champs @ budapest (done)
+
+Goals: 
 - visualise the track events using Matplotlib and seaborn. (make a good visual data. A nice interactive dashboard would be sick!)
+- work with world youth champs, world junior champs, world university games, olympics youth, asian youth games, asian youth champions
+
 
 
 

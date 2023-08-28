@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from DataQueue import DataQueue
 import re, csv, pandas
-html_doc = "./webpages/webpage2.html"
+
 
 print("Command: Obtaining Data")
 
@@ -32,13 +32,16 @@ def obtainAllAvailableData(athlete_row, athlete_data_row, event_date, event_id,e
     qualification = athlete_row.select("td:nth-last-child(2)")[0].text.upper()
     Misc_data = row.select("td:nth-last-child(1)")[0].text
     
+    try:
+        if furthest_jump != "DNS" and furthest_jump !="NM":
+            all_jump_data = athlete_data_row.find("td", {"colspan": "7"}).text
+        else:
+            all_jump_data ="DNS"
+    except Exception as e:
+        all_jump_data = "DNE"
+
+    
    
-    if furthest_jump != "DNS" and furthest_jump !="NM":
-        all_jump_data = athlete_data_row.find("td", {"colspan": "7"}).text
-    else:
-        all_jump_data ="DNS"
-   
-     
     gender = "Men" if event_id.split(".")[0] == "1" else "Women"
 
     return {
@@ -74,23 +77,31 @@ competitions = ["2010 Commonwealth games Delhi",
 "2018 Commonwealth games",
 "2019 Asian championships",
 "2021 Tokyo Olympics",
-"2022 commonwealth games"]
+"2022 commonwealth games",
+"2023 World Athletics Championships Budapest"
+]
 
 for comp in competitions:
     html_doc = "./webpages/" + f"{comp}.html" 
 
-    print(f"Command: Obtaining Data for {comp}")
+    print(f"--> Command: Obtaining Data for {comp} <--")
     with open(html_doc, 'r', encoding="utf-8") as html:
         event_data = {}
-        event_ids = ["1.330.","2.330.", "1.340.", "2.340.", "1.310.", "2.310."] #"1.330.", "2.330.", "1.340.", "2.340.", "1.310.", "2.310."
+        event_ids = ["1.330.","2.330.", "1.340.", "2.340.", "1.310.", "2.310.","1.330.000000.", "2.330.000000.", "1.340.000000.", "2.340.000000.", "1.310.000000.", "2.310.000000."] 
+        #"1.330.", "2.330.", "1.340.", "2.340.", "1.310.", "2.310."
+        #"1.330.000000.", "2.330.000000.", "1.340.000000.", "2.340.000000.", "1.310.000000.", "2.310.000000."
+        #000000.
         athlete_data = DataQueue() # queue to keep track of data
         soup = BeautifulSoup(html,'html.parser')
-        
-        competition_name ="14th IAAF World Championships, Moskva, RUS "
+
 
         for event_id in event_ids:
             event_tag = soup.find('td', {"class": 'event', "id" : event_id})
-        
+
+            if not event_tag:
+                print(f"event_tag for id: {event_id} not found")
+                continue
+            
             event_name = event_tag.b.text
             event_date = event_tag.parent.find("td", class_="date").text
 
@@ -98,7 +109,6 @@ for comp in competitions:
         
         
             row = event_tag.parent.find_next_sibling('tr') # gives the next <tr> sibling 
-            
             ROUND = "Finals"  
             
             while True:
@@ -123,14 +133,18 @@ for comp in competitions:
                     row = row.find_next_sibling('tr')
                     #pass
                 else:
-                    data = obtainAllAvailableData(athlete_row=row, athlete_data_row= row.find_next_sibling('tr'), event_date=event_date, event_id=event_id,event_name=event_name, competition_name=competition_name, round=ROUND)
+                    data = obtainAllAvailableData(athlete_row=row, athlete_data_row= row.find_next_sibling('tr'), event_date=event_date, event_id=event_id,event_name=event_name, competition_name=comp, round=ROUND)
 
                     athlete_data.enqueue(data)
 
-                
-                    row = row.find_next_sibling('tr') # skips the athlete_data_row
-                    row = row.find_next_sibling('tr') # next athlete row
+                    furthest_jump = row.find_all("td", class_="rc")[2].text.strip()
+                    if furthest_jump == "DNS":
+                        row = row.find_next_sibling('tr') # next athlete row
+                    else:
+                        row = row.find_next_sibling('tr') # skips the athlete_data_row
+                        row = row.find_next_sibling('tr') # next athlete row
         
+                
         
 
         print("Command: Formatting to CSV")

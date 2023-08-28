@@ -77,7 +77,9 @@ competitions = ["2010 Commonwealth games Delhi",
 "2018 Commonwealth games",
 "2019 Asian championships",
 "2021 Tokyo Olympics",
-"2022 commonwealth games"]
+"2022 commonwealth games",
+"2023 World Athletics Championships Budapest"
+]
 
 for comp in competitions:
     html_doc = "./webpages/" + f"{comp}.html" 
