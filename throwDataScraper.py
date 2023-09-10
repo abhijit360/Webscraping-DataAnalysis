@@ -65,19 +65,20 @@ def obtainAllAvailableData(athlete_row, athlete_data_row, event_date, event_id,e
         "Gender": gender,
     }
 
-competitions = ["2010 Commonwealth games Delhi",
-"2012 London olympics",
-"2013 Asian championship",
-"2014 Asian games",
-"2014 Commonwealth games Glasgow",
-"2015 Asian championship",
-"2016 Rio Olympics",
-"2017 Asian championship",
-"2018 Asian games",
-"2018 Commonwealth games",
-"2019 Asian championships",
-"2021 Tokyo Olympics",
-"2022 commonwealth games",
+competitions = [
+# "2010 Commonwealth games Delhi",
+# "2012 London olympics",
+# "2013 Asian championship",
+# "2014 Asian games",
+# "2014 Commonwealth games Glasgow",
+# "2015 Asian championship",
+# "2016 Rio Olympics",
+# "2017 Asian championship",
+# "2018 Asian games",
+# "2018 Commonwealth games",
+# "2019 Asian championships",
+# "2021 Tokyo Olympics",
+# "2022 commonwealth games",
 "2023 World Athletics Championships Budapest"
 ]
 
@@ -87,7 +88,7 @@ for comp in competitions:
     print(f"Command: Obtaining Data for {comp}")
     with open(html_doc, 'r', encoding="utf-8") as html:
         event_data = {}
-        event_ids = ["1.350.", "1.360." , "1.380." , "1.390." , "2.350." , "2.360." ,"2.380.", "2.390."]
+        event_ids = ["1.350.", "1.360." , "1.380." , "1.390." , "2.350." , "2.360." ,"2.380.", "2.390.","1.350.000000.", "1.360.000000." , "1.380.000000." , "1.390.000000." , "2.350.000000." , "2.360.000000." ,"2.380.000000.", "2.390.000000."]
          #"1.350.", "1.360." , "1.380." , "1.390." , "2.350." , "2.360." ,"2.380.", "2.390."
          #"1.350.000000.", "1.360.000000." , "1.380.000000." , "1.390.000000." , "2.350.000000." , "2.360.000000." ,"2.380.000000.", "2.390.000000."
         athlete_data = DataQueue() # queue to keep track of data

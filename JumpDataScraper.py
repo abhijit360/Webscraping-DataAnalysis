@@ -65,19 +65,20 @@ def obtainAllAvailableData(athlete_row, athlete_data_row, event_date, event_id,e
         "Gender": gender,
     }
 
-competitions = ["2010 Commonwealth games Delhi",
-"2012 London olympics",
-"2013 Asian championship",
-"2014 Asian games",
-"2014 Commonwealth games Glasgow",
-"2015 Asian championship",
-"2016 Rio Olympics",
-"2017 Asian championship",
-"2018 Asian games",
-"2018 Commonwealth games",
-"2019 Asian championships",
-"2021 Tokyo Olympics",
-"2022 commonwealth games",
+competitions = [
+# "2010 Commonwealth games Delhi",
+# "2012 London olympics",
+# "2013 Asian championship",
+# "2014 Asian games",
+# "2014 Commonwealth games Glasgow",
+# "2015 Asian championship",
+# "2016 Rio Olympics",
+# "2017 Asian championship",
+# "2018 Asian games",
+# "2018 Commonwealth games",
+# "2019 Asian championships",
+# "2021 Tokyo Olympics",
+# "2022 commonwealth games",
 "2023 World Athletics Championships Budapest"
 ]
 
